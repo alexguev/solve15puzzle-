@@ -1,10 +1,8 @@
 # solve15puzzle
 
-A Clojure library designed to ... well, that part is up to you.
+A Clojure program that solves the 15 Puzzle 
 
 ## Usage
-
-FIXME
 
 ## License
 
