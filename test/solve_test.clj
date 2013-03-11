@@ -2,7 +2,7 @@
   (:use [clojure.test]
         [solve]))
 
-(deftest test-successor
+(deftest test-successor-fn
   (testing "top left edge" 
     (def state-initial [0  1  2  3
                         4  5  6  7
@@ -18,7 +18,7 @@
                     12 13 14 15])
     (is (= [{:path [] :cost 0 :state state-initial :action :right :next-state state-right}
             {:path [] :cost 0 :state state-initial :action :down :next-state state-down}]
-           (successor {state-initial {:cost 0 :path []}}))))
+           (successor-fn {state-initial {:cost 0 :path []}}))))
   (testing "top right edge"
     (def state-initial [1  2  3  0
                         4  5  6  7
@@ -34,7 +34,7 @@
                     12 13 14 15])
     (is (= [{:path [] :cost 0 :state state-initial :action :down :next-state state-down}
             {:path [] :cost 0 :state state-initial :action :left :next-state state-left}]
-           (successor {state-initial {:cost 0 :path []}}))))
+           (successor-fn {state-initial {:cost 0 :path []}}))))
   (testing "bottom left edge"
     (def state-initial [1  2  3  4
                         5  6  7  8
@@ -50,7 +50,7 @@
                      13  0 14 15])
     (is (= [{:path [] :cost 0 :state state-initial :action :up :next-state state-up}
             {:path [] :cost 0 :state state-initial :action :right :next-state state-right}]
-           (successor {state-initial {:cost 0 :path []}}))))
+           (successor-fn {state-initial {:cost 0 :path []}}))))
   (testing "bottom right edge"
     (def state-initial [1  2  3  4
                         5  6  7  8
@@ -66,7 +66,7 @@
                     13 14  0 15])
     (is (= [{:path [] :cost 0 :state state-initial :action :up :next-state state-up}
             {:path [] :cost 0 :state state-initial :action :left :next-state state-left}]
-           (successor {state-initial {:cost 0 :path []}}))))
+           (successor-fn {state-initial {:cost 0 :path []}}))))
   (testing "center"
     (def state-initial [1  2  3  4
                         5  0  7  8
@@ -92,7 +92,7 @@
             {:path [] :cost 0 :state state-initial :action :right :next-state state-right}
             {:path [] :cost 0 :state state-initial :action :down :next-state state-down}
             {:path [] :cost 0 :state state-initial :action :left :next-state state-left}]
-           (successor {state-initial {:cost 0 :path []}}))))  
+           (successor-fn {state-initial {:cost 0 :path []}}))))  
   (testing "exclude state already in path"
     (def state-initial [1  2  3  4
                         5  6  7  8
@@ -107,6 +107,17 @@
                      9 10 11 12
                     13 14  0 15])
     (is (= [{:path [state-up :down] :cost 1 :state state-initial :action :left :next-state state-left}]
-           (successor {state-initial {:cost 1 :path [state-up :down]}})))))
+           (successor-fn {state-initial {:cost 1 :path [state-up :down]}})))))
+
+(deftest test-min-cost-state
+  (testing "sigle state/path"
+    (is (= ["state" {:cost 1 :path []}]
+           (min-cost-state {"state" {:cost 1 :path []}}))))
+  (testing "many states/paths"
+    (is (= ["state-1" {:cost 1 :path []}]
+           (min-cost-state {"state-1" {:cost 1 :path []}
+                            "state-2" {:cost 2 :path []}})))))
 
 (run-tests 'solve-test)
+
+(solve (generate-state 10))
