@@ -118,6 +118,14 @@
            (min-cost-state {"state-1" {:cost 1 :path []}
                             "state-2" {:cost 2 :path []}})))))
 
-(run-tests 'solve-test)
+;(run-tests 'solve-test)
 
 ;(solve (generate-state 1))
+
+(def s1 [1 5 2 3 4 0 6 10 8 9 11 7 12 13 14 15])
+
+(def s2 [1 2 3 7 4 0 5 11 8 9 6 14 12 13 15 10])
+
+(time (solve (generate-state 100)))
+
+(time (solve [5 6 3 7 1 2 11 14 8 13 9 4 12 15 10 0]))
