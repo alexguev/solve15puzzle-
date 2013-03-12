@@ -1,12 +1,16 @@
 (ns solve)
 
+(defn to-col [index] (mod index 4))
+(defn to-row [index] (quot index 4))
+(defn to-index [col row] (+ (* 4 row) col))
+
 (defn action-block-index [block-index action]
-  (let [col (mod block-index 4)
-        row (quot block-index 4)
+  (let [col (to-col block-index)
+        row (to-row block-index)
         action-col (+ col (action {:up 0 :right 1 :down 0 :left -1}))
         action-row (+ row (action {:up -1 :right 0 :down 1 :left 0}))]
     (when (and (>= action-col 0) (<= action-col 3) (>= action-row 0) (<= action-row 3))
-      (+ (* 4 action-row) action-col))))
+      (to-index action-col action-row))))
 
 (defn play-action [state action]
   (let [[empty-block-index] (keep-indexed #(if (= %2 0) %1) state)
@@ -18,9 +22,22 @@
 
 
 ; use manhattan distance
-(defn step-cost [state]
-  (apply + (keep-indexed #(if (or (= 0 %2) (= (+ %1 1) %2)) 0 1) 
-                         state)))
+;(defn step-cost [state path]
+;  (+ (apply + (keep-indexed #(if (= %1 %2) 0 1)
+;                            state))
+;     (count path)))
+
+(defn abs [n]
+  (if (< 0 n) n (- n)))
+
+(defn manhattan-distance [[col1 row1] [col2 row2]]
+  (+ (abs (- col1 col2))
+     (abs (- row1 row2))))
+
+(defn step-cost [state path]
+  (+ (reduce + (for [idx (range 16)] 
+                 (manhattan-distance [(to-col idx) (to-row idx)] [(to-col (nth state idx)) (to-row (nth state idx))])))
+     (count path)))
 
 (defn successor
   [state path explored]
@@ -29,39 +46,38 @@
             [:up :right :down :left])  
        (filter (comp not nil?))
        (remove (fn [[action next-state]] (contains? explored next-state)))
-       (map (fn [[action next-state]] [next-state (conj path action)]))
-       (seq)))
+       (map (fn [[action next-state]] 
+              (let [new-path (conj path action)
+                    new-cost (step-cost next-state new-path)]
+                [next-state [new-path new-cost]])))))
 
-(def state-solved [1  2  3  4
-                   5  6  7  8 
-                   9 10 11 12
-                  13 14 15  0])
+(def state-solved [0  1  2  3
+                   4  5  6  7 
+                   8  9 10 11
+                  12 13 14 15])
 
 (defn solved [state]
   (= state-solved state))
 
 (defn best-state [fringe] 
-  (apply min-key (fn [[state path]] (+ (count path) (step-cost state))) fringe))
-
-(defn fringe-sort-fn [[s1 p1] [s2 p2]]
-  (compare (+ (step-cost s1) (count p1))
-           (+ (step-cost s2) (count p2))))
+  (apply min-key (fn [[_ [_ cost]]] cost) fringe))
 
 ; tbd: use transient fringe
 (defn a* 
   "solves the 15 Puzzle using the A* algorithm.
     'state' is the initial state"
   [state]
-  (loop [fringe {state []}
+  (loop [fringe {state [[] (step-cost state [])]}
          explored (transient #{})]
-    (let [[best-state best-path] (best-state fringe)]
-      (if (solved best-state)
-        best-path
-        (let [new-explored (conj! explored best-state)]
-          (when-let [successors (successor best-state best-path new-explored)]
-            (let [new-fringe (into (dissoc fringe best-state) 
-                                   successors)]
-              (recur new-fringe new-explored))))))))
+    (println (format "explored %s states" (count explored)))
+    (when (seq fringe)
+      (let [[best-state [best-path _]] (best-state fringe)]
+        (if (solved best-state)
+          best-path
+          (let [new-explored (conj! explored best-state)
+                successors (successor best-state best-path new-explored)
+                new-fringe (into (dissoc fringe best-state) successors)]
+            (recur new-fringe new-explored)))))))
 
 ; tbd: generalize to n puzzle
 (defn solve
@@ -80,10 +96,10 @@
 
 (def s1 [1 5 2 3 4 0 6 10 8 9 11 7 12 13 14 15])
 
-(def s2 [2 3 0 4 1 6 8 12 5 9 10 7 13 14 11 15])
+(def s2 [1 2 3 7 4 0 5 11 8 9 6 14 12 13 15 10])
 
-(solve (generate-state 20))
+(solve (generate-state 50))
 
-(persistent! (reduce conj! (transient [1]) [2 3 4 5]))
+(solve s2)
 
-;(solve s)
+(into [1] nil)
