@@ -120,4 +120,4 @@
 
 (run-tests 'solve-test)
 
-(solve (generate-state 10))
+;(solve (generate-state 1))
