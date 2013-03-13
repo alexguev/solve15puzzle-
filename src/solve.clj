@@ -1,8 +1,10 @@
 (ns solve)
 
-(defn to-col [index] (mod index 4))
-(defn to-row [index] (quot index 4))
-(defn to-index [col row] (+ (* 4 row) col))
+(def n 4) ; the puzzle size, where the total number of sliding blocks is n*n-1.
+
+(defn to-col [index] (mod index n))
+(defn to-row [index] (quot index n))
+(defn to-index [col row] (+ (* n row) col))
 
 (defn action-block-index [block-index action]
   (let [col (to-col block-index)
@@ -32,29 +34,22 @@
      (abs (- row1 row2))))
 
 (defn step-cost [state path]
-  (+ (reduce + (for [idx (range 16)] 
+  (+ (reduce + (for [idx (range (* n n))] 
                  (manhattan-distance [(to-col idx) (to-row idx)] [(to-col (nth state idx)) (to-row (nth state idx))])))
      (count path)))
 
 (defn successor
   [state path explored]
-  (->> (map (fn [action] 
-              (when-let [new-state (play-action state action)] [action new-state])) 
+  (->> (map (fn [action] (when-let [new-state (play-action state action)] [action new-state])) 
             [:up :right :down :left])  
        (filter (comp not nil?))
        (remove (fn [[action new-state]] (contains? explored new-state)))
-       (map (fn [[action new-state]] 
-              (let [new-path (conj path action)
-                    new-cost (step-cost new-state new-path)] ; move cost calculation out of here
-                [new-state new-path new-cost])))))
+       (map (fn [[action new-state]] [new-state (conj path action)]))))
 
-(def state-solved [0  1  2  3
-                   4  5  6  7 
-                   8  9 10 11
-                  12 13 14 15])
+(def solution (vec (range (* n n))))
 
 (defn solved [state]
-  (= state-solved state))
+  (= solution state))
 
 (defn best-state [fringe] 
   (first fringe))
@@ -67,9 +62,10 @@
 
 (defn a* 
   "solves the 15 Puzzle using the A* algorithm.
-    'state' is the initial state"
-  [state]
-  (loop [fringe (sorted-set-by fringe-sort-fn [state [] (step-cost state [])]) 
+    's' is the initial state
+    'f' the step cost function f(s, p), where 's' is a state and 'p' is the path taken to get to 's'"
+  [s f]
+  (loop [fringe (sorted-set-by fringe-sort-fn [s [] (f s [])]) 
          explored (transient #{})]
     (println (format "explored %s states" (count explored)))
     (when (seq fringe)
@@ -78,19 +74,20 @@
           best-path
           (let [new-explored (conj! explored best-state)
                 successors (successor best-state best-path new-explored)
-                new-fringe (into (disj fringe best-node) successors)]
+                new-fringe (into (disj fringe best-node) 
+                                 (map (fn [[s p]] [s p (f s p)]) successors))]
             (recur new-fringe new-explored)))))))
 
 ; tbd: generalize to n puzzle
 (defn solve
-  [state]
-  (let [solution (a* state)]
-    (println (format "solved %s using solution %s in %s steps" state solution (count solution)))
+  [s]
+  (let [solution (a* s step-cost)]
+    (println (format "solved %s using solution %s in %s steps" s solution (count solution)))
     solution))
 
-(defn generate-state [n]
+(defn generate-state [steps]
   (nth (iterate (fn [s] (->> (map (partial play-action s) [:up :right :down :left])
                              (filter (comp not nil?))
                              (rand-nth)))
-                state-solved)
-       n))
+                solution)
+       steps))

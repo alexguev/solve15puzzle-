@@ -16,8 +16,8 @@
                      0  5  6  7
                      8  9 10 11
                     12 13 14 15])
-    (is (= [[state-right [:right] 3]
-            [state-down [:down] 3]]
+    (is (= [[state-right [:right]]
+            [state-down [:down]]]
            (successor state-initial [] []))))
   (testing "top right edge"
     (def state-initial [1  2  3  0
@@ -32,8 +32,8 @@
                      4  5  6  7
                      8  9 10 11
                     12 13 14 15])
-    (is (= [[state-down [:down] 9]
-            [state-left [:left] 5]]
+    (is (= [[state-down [:down]]
+            [state-left [:left]]]
            (successor state-initial [] []))))
   (testing "bottom left edge"
     (def state-initial [1  2  3  4
@@ -48,8 +48,8 @@
                       5  6  7  8
                       9 10 11 12
                      13  0 14 15])
-    (is (= [[state-up [:up] 25]
-            [state-right [:right] 27]]
+    (is (= [[state-up [:up]]
+            [state-right [:right]]]
            (successor state-initial [] []))))
   (testing "bottom right edge"
     (def state-initial [1  2  3  4
@@ -64,8 +64,8 @@
                      5  6  7  8
                      9 10 11 12
                     13 14  0 15])
-    (is (= [[state-up [:up] 29]
-            [state-left [:left] 29]]
+    (is (= [[state-up [:up]]
+            [state-left [:left]]]
            (successor state-initial [] []))))
   (testing "center"
     (def state-initial [1  2  3  4
@@ -88,10 +88,10 @@
                      0  5  7  8
                      9 10 11 12
                     13 14 15  6])
-    (is (= [[state-up [:up] 29]
-            [state-right [:right] 31]
-            [state-down [:down] 31]
-            [state-left [:left] 27]]
+    (is (= [[state-up [:up]]
+            [state-right [:right]]
+            [state-down [:down]]
+            [state-left [:left]]]
            (successor state-initial [] []))))
   (testing "exclude state already in path"
     (def state-initial [1  2  3  4
@@ -106,11 +106,16 @@
                      5  6  7  8
                      9 10 11 12
                     13 14  0 15])
-    (is (= [[state-left [:left] 29]]
+    (is (= [[state-left [:left]]]
            (successor state-initial [] #{state-up})))))
+
+(deftest test-solution
+  (is (= []
+         (solve solution)))
+  (is (= [:up :right :down :right :right :down :left :up :left :left :up :up]
+         (solve [4 1 2 3 9 8 6 7 0 5 10 14 12 13 15 11]))))
 
   
 (run-tests)
-
-(time (solve (generate-state 5)))
-
+  
+;(time (solve (generate-state 2)))
