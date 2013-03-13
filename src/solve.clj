@@ -40,14 +40,15 @@
 
 (defn successor
   [state path explored]
-  (->> (map (fn [action] (when-let [next-state (play-action state action)] 
-                           [action next-state])) 
+  (->> (map (fn [action] 
+              (when-let [next-state (play-action state action)] [action next-state])) 
             [:up :right :down :left])  
        (filter (comp not nil?))
        (remove (fn [[action next-state]] (contains? explored next-state)))
-       (map (fn [[action next-state]] (let [new-path (conj path action)
-                                            new-cost (step-cost next-state new-path)]
-                                        [next-state [new-path new-cost]])))))
+       (map (fn [[action next-state]] 
+              (let [new-path (conj path action)
+                    new-cost (step-cost next-state new-path)]
+                [next-state [new-path new-cost]])))))
 
 (def state-solved [0  1  2  3
                    4  5  6  7 
@@ -60,19 +61,19 @@
 (defn best-state [fringe] 
   (apply min-key (fn [[_ [_ cost]]] cost) fringe))
 
-; tbd: use transient fringe
 (defn a* 
   "solves the 15 Puzzle using the A* algorithm.
     'state' is the initial state"
   [state]
+  ; tbd: use sorted-set-by for fringe {:state [...] :path [:up :down ...] :cost 12}
   (loop [fringe {state [[] (step-cost state [])]}
-         explored #{}]
+         explored (transient #{})]
     (println (format "explored %s states" (count explored)))
     (when (seq fringe)
       (let [[best-state [best-path _]] (best-state fringe)]
         (if (solved best-state)
           best-path
-          (let [new-explored (conj explored best-state)
+          (let [new-explored (conj! explored best-state)
                 successors (successor best-state best-path new-explored)
                 new-fringe (into (dissoc fringe best-state) successors)]
             (recur new-fringe new-explored)))))))

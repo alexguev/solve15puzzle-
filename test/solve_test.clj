@@ -126,6 +126,13 @@
 
 (def s2 [1 2 3 7 4 0 5 11 8 9 6 14 12 13 15 10])
 
-(time (solve (generate-state 100)))
+(time (solve (generate-state 10)))
 
-(time (solve [5 6 3 7 1 2 11 14 8 13 9 4 12 15 10 0]))
+(time (solve [5 6 2 3 4 1 7 9 13 8 0 11 12 10 14 15] ))
+
+(def q (java.util.PriorityQueue.))
+
+(.add q "a")
+(.remove q "a")
+
+(seq q)
