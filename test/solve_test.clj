@@ -2,7 +2,7 @@
   (:use [clojure.test]
         [solve]))
 
-(deftest test-successor-fn
+(deftest test-successor
   (testing "top left edge" 
     (def state-initial [0  1  2  3
                         4  5  6  7
@@ -16,9 +16,9 @@
                      0  5  6  7
                      8  9 10 11
                     12 13 14 15])
-    (is (= [{:path [] :cost 0 :state state-initial :action :right :next-state state-right}
-            {:path [] :cost 0 :state state-initial :action :down :next-state state-down}]
-           (successor-fn {state-initial {:cost 0 :path []}}))))
+    (is (= [[state-right [:right] 3]
+            [state-down [:down] 3]]
+           (successor state-initial [] []))))
   (testing "top right edge"
     (def state-initial [1  2  3  0
                         4  5  6  7
@@ -32,9 +32,9 @@
                      4  5  6  7
                      8  9 10 11
                     12 13 14 15])
-    (is (= [{:path [] :cost 0 :state state-initial :action :down :next-state state-down}
-            {:path [] :cost 0 :state state-initial :action :left :next-state state-left}]
-           (successor-fn {state-initial {:cost 0 :path []}}))))
+    (is (= [[state-down [:down] 9]
+            [state-left [:left] 5]]
+           (successor state-initial [] []))))
   (testing "bottom left edge"
     (def state-initial [1  2  3  4
                         5  6  7  8
@@ -48,9 +48,9 @@
                       5  6  7  8
                       9 10 11 12
                      13  0 14 15])
-    (is (= [{:path [] :cost 0 :state state-initial :action :up :next-state state-up}
-            {:path [] :cost 0 :state state-initial :action :right :next-state state-right}]
-           (successor-fn {state-initial {:cost 0 :path []}}))))
+    (is (= [[state-up [:up] 25]
+            [state-right [:right] 27]]
+           (successor state-initial [] []))))
   (testing "bottom right edge"
     (def state-initial [1  2  3  4
                         5  6  7  8
@@ -64,9 +64,9 @@
                      5  6  7  8
                      9 10 11 12
                     13 14  0 15])
-    (is (= [{:path [] :cost 0 :state state-initial :action :up :next-state state-up}
-            {:path [] :cost 0 :state state-initial :action :left :next-state state-left}]
-           (successor-fn {state-initial {:cost 0 :path []}}))))
+    (is (= [[state-up [:up] 29]
+            [state-left [:left] 29]]
+           (successor state-initial [] []))))
   (testing "center"
     (def state-initial [1  2  3  4
                         5  0  7  8
@@ -88,11 +88,11 @@
                      0  5  7  8
                      9 10 11 12
                     13 14 15  6])
-    (is (= [{:path [] :cost 0 :state state-initial :action :up :next-state state-up}
-            {:path [] :cost 0 :state state-initial :action :right :next-state state-right}
-            {:path [] :cost 0 :state state-initial :action :down :next-state state-down}
-            {:path [] :cost 0 :state state-initial :action :left :next-state state-left}]
-           (successor-fn {state-initial {:cost 0 :path []}}))))  
+    (is (= [[state-up [:up] 29]
+            [state-right [:right] 31]
+            [state-down [:down] 31]
+            [state-left [:left] 27]]
+           (successor state-initial [] []))))
   (testing "exclude state already in path"
     (def state-initial [1  2  3  4
                         5  6  7  8
@@ -106,19 +106,11 @@
                      5  6  7  8
                      9 10 11 12
                     13 14  0 15])
-    (is (= [{:path [state-up :down] :cost 1 :state state-initial :action :left :next-state state-left}]
-           (successor-fn {state-initial {:cost 1 :path [state-up :down]}})))))
+    (is (= [[state-left [:left] 29]]
+           (successor state-initial [] #{state-up})))))
 
-(deftest test-min-cost-state
-  (testing "sigle state/path"
-    (is (= ["state" {:cost 1 :path []}]
-           (min-cost-state {"state" {:cost 1 :path []}}))))
-  (testing "many states/paths"
-    (is (= ["state-1" {:cost 1 :path []}]
-           (min-cost-state {"state-1" {:cost 1 :path []}
-                            "state-2" {:cost 2 :path []}})))))
+  
+(run-tests)
 
-(run-tests 'solve-test)
-
-;(time (solve (generate-state 40)))
+(time (solve (generate-state 5)))
 

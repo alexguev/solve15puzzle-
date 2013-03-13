@@ -45,7 +45,7 @@
        (remove (fn [[action new-state]] (contains? explored new-state)))
        (map (fn [[action new-state]] 
               (let [new-path (conj path action)
-                    new-cost (step-cost new-state new-path)]
+                    new-cost (step-cost new-state new-path)] ; move cost calculation out of here
                 [new-state new-path new-cost])))))
 
 (def state-solved [0  1  2  3
@@ -84,9 +84,8 @@
 ; tbd: generalize to n puzzle
 (defn solve
   [state]
-  (println (format "solving: %s" state))
   (let [solution (a* state)]
-    (println (format "solved %s in %s steps" state (count solution)))
+    (println (format "solved %s using solution %s in %s steps" state solution (count solution)))
     solution))
 
 (defn generate-state [n]
