@@ -118,21 +118,7 @@
            (min-cost-state {"state-1" {:cost 1 :path []}
                             "state-2" {:cost 2 :path []}})))))
 
-;(run-tests 'solve-test)
+(run-tests 'solve-test)
 
-;(solve (generate-state 1))
+;(time (solve (generate-state 40)))
 
-(def s1 [1 5 2 3 4 0 6 10 8 9 11 7 12 13 14 15])
-
-(def s2 [1 2 3 7 4 0 5 11 8 9 6 14 12 13 15 10])
-
-(time (solve (generate-state 10)))
-
-(time (solve [5 6 2 3 4 1 7 9 13 8 0 11 12 10 14 15] ))
-
-(def q (java.util.PriorityQueue.))
-
-(.add q "a")
-(.remove q "a")
-
-(seq q)
