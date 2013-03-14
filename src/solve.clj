@@ -66,13 +66,13 @@
     'f' the step cost function f(s, p), where 's' is a state and 'p' is the path taken to get to 's'"
   [s f]
   (loop [fringe (sorted-set-by fringe-sort-fn [s [] (f s [])]) 
-         explored (transient #{})]
+         explored #{}]
     (println (format "explored %s states" (count explored)))
     (when (seq fringe)
       (let [[best-state best-path _ :as best-node] (best-state fringe)]
         (if (solved best-state)
           best-path
-          (let [new-explored (conj! explored best-state)
+          (let [new-explored (conj explored best-state)
                 successors (successor best-state best-path new-explored)
                 new-fringe (into (disj fringe best-node) 
                                  (map (fn [[s p]] [s p (f s p)]) successors))]

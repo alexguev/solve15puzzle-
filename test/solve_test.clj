@@ -118,4 +118,4 @@
   
 (run-tests)
   
-;(time (solve (generate-state 2)))
+;(time (solve (generate-state 12)))
