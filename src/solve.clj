@@ -60,6 +60,14 @@
       (compare s1 s2)
       result)))
 
+(defn pfargs
+  [f coll]
+  (let [p (promise)
+        futs (for [args coll] (future (let [r (apply f args)] (deliver p r))))]
+    (let [v @p] 
+      (doseq [fut futs] (when-not (future-done? fut) (future-cancel fut)))
+      v)))
+
 (defn a* 
   "solves the 15 Puzzle using the A* algorithm.
     's' is the initial state
@@ -78,7 +86,6 @@
                                  (map (fn [[s p]] [s p (f s p)]) successors))]
             (recur new-fringe new-explored)))))))
 
-; tbd: generalize to n puzzle
 (defn solve
   [s]
   (let [solution (a* s step-cost)]
@@ -91,3 +98,4 @@
                              (rand-nth)))
                 solution)
        steps))
+
