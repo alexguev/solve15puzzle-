@@ -112,14 +112,21 @@
 (deftest test-solution
   (is (= []
          (solve solution)))
-  (is (= [:up :right :down :right :right :down :left :up :left :left :up :up]
-         (solve [4 1 2 3 9 8 6 7 0 5 10 14 12 13 15 11]))))
-
-  
+  (let [s (gen-state 16)
+        p (solve s)]
+    (is (= solution
+           (reduce play-action s p)))))
+ 
+ 
 (run-tests)
   
-;(time (solve (generate-state 100)))
-(time (solve [4 1 2 3 9 8 6 7 0 5 10 14 12 13 15 11]))
+;(time (solve [4 1 2 3 9 8 6 7 0 5 10 14 12 13 15 11]))
+
+;(time (solve (gen-state 20)))
+;(time (solve [4 1 2 3 9 8 6 7 0 5 10 14 12 13 15 11]))
+
+;(time (solve [5 2 1 7 10 4 3 0 9 13 11 15 8 12 14 6]))
+
 
 ;explored 48725 states
 ;solved [5 2 1 7 10 4 3 0 9 13 11 15 8 12 14 6] using solution [:up :left :left :down :left :down :down :right :right :right :up :up :left :up :right :down :down :left :down :left :up :up :left :up :right :right :down :down :left :up :left :up] in 32 steps

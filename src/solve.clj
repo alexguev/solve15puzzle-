@@ -2,17 +2,17 @@
 
 (def n 4) ; the puzzle size, where the total number of sliding blocks is n*n-1.
 
-(defn to-col [index] (mod index n))
-(defn to-row [index] (quot index n))
-(defn to-index [col row] (+ (* n row) col))
+(defn coords [index]
+  [(mod index n) (quot index n)])
+
+(defn index [x y] (+ (* n y) x))
 
 (defn action-block-index [block-index action]
-  (let [col (to-col block-index)
-        row (to-row block-index)
-        action-col (+ col (action {:up 0 :right 1 :down 0 :left -1}))
-        action-row (+ row (action {:up -1 :right 0 :down 1 :left 0}))]
-    (when (and (>= action-col 0) (<= action-col 3) (>= action-row 0) (<= action-row 3))
-      (to-index action-col action-row))))
+  (let [[x y] (coords block-index)
+        new-x (+ x (action {:up 0 :right 1 :down 0 :left -1}))
+        new-y (+ y (action {:up -1 :right 0 :down 1 :left 0}))]
+    (when (and (>= new-x 0) (<= new-x 3) (>= new-y 0) (<= new-y 3))
+      (index new-x new-y))))
 
 (defn play-action [state action]
   (let [[empty-block-index] (keep-indexed #(if (= %2 0) %1) state)
@@ -29,13 +29,13 @@
 (defn abs [n]
   (if (< 0 n) n (- n)))
 
-(defn manhattan-distance [[col1 row1] [col2 row2]]
-  (+ (abs (- col1 col2))
-     (abs (- row1 row2))))
+(defn manhattan-distance [[x1 y1] [x2 y2]]
+  (+ (abs (- x1 x2))
+     (abs (- y1 y2))))
 
 (defn step-cost [state path]
   (+ (reduce + (for [idx (range (* n n))] 
-                 (manhattan-distance [(to-col idx) (to-row idx)] [(to-col (nth state idx)) (to-row (nth state idx))])))
+                 (manhattan-distance (coords idx) (coords (nth state idx)))))
      (count path)))
 
 (defn successor
@@ -60,14 +60,6 @@
       (compare s1 s2)
       result)))
 
-(defn pfargs
-  [f coll]
-  (let [p (promise)
-        futs (for [args coll] (future (let [r (apply f args)] (deliver p r))))]
-    (let [v @p] 
-      (doseq [fut futs] (when-not (future-done? fut) (future-cancel fut)))
-      v)))
-
 (defn a* 
   "solves the 15 Puzzle using the A* algorithm.
     's' is the initial state
@@ -75,11 +67,11 @@
   [s f]
   (loop [fringe (sorted-set-by fringe-sort-fn [s [] (f s [])]) 
          explored #{}]
-    (println (format "explored %s states" (count explored)))
     (when (seq fringe)
       (let [[best-state best-path _ :as best-node] (best-state fringe)]
         (if (solved best-state)
-          best-path
+          (do (println (format "explored %s states" (count explored)))
+              best-path)
           (let [new-explored (conj explored best-state)
                 successors (successor best-state best-path new-explored)
                 new-fringe (into (disj fringe best-node) 
@@ -92,10 +84,18 @@
     (println (format "solved %s using solution %s in %s steps" s solution (count solution)))
     solution))
 
-(defn generate-state [steps]
+(defn gen-state [steps]
   (nth (iterate (fn [s] (->> (map (partial play-action s) [:up :right :down :left])
                              (filter (comp not nil?))
                              (rand-nth)))
                 solution)
        steps))
 
+(defn pfargs
+  [f coll]
+  (let [p (promise)
+        futs (for [args coll] (future (let [r (apply f args)] (deliver p r))))]
+    (doall futs)
+    (let [v @p] 
+      (doseq [fut futs] (when-not (future-done? fut) (future-cancel fut)))
+      v)))
